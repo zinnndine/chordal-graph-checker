@@ -1,16 +1,18 @@
 from PySide6.QtWidgets import ( QLabel ,QHBoxLayout ,
  QVBoxLayout , QCheckBox , QApplication , QMainWindow  ,
   QPushButton , QWidget , QListWidget , QFileDialog , QListView , QComboBox , QTextEdit 
-  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem, QGraphicsLineItem , QStackedWidget)
+  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem, QGraphicsLineItem ,QMessageBox , QStackedWidget)
 from PySide6.QtGui import QPen, QBrush
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt , Signal
 import sys
 import random
 import csv
 
 
-final_result = ""
-win = []
+final_result = "" #output
+win = [] #windows opened
+vert = 0 #vertices number
+adj = []
 w=0
 
 # adjency list =  [[1,2,3],[0,2],[0,1],[0]]  where in index i there is all nodes adjacent to i
@@ -61,15 +63,20 @@ def is_chordal_tarjan(adj):
     return True
 
 
-
+def handle_data(a,b):
+    global adj, vert
+    adj = a
+    vert = b
 
 #the function called when pressed fill
 def fill():
+    global adj , vert
     w = choose()                
     w.setWindowModality(Qt.ApplicationModal)
     w.show()
     win.append(w)
-    
+    w.data.connect(handle_data)   
+
 #drawing the graph
 class graph(QGraphicsView):
     def __init__(self):
@@ -128,8 +135,13 @@ class graph(QGraphicsView):
         self.canvas.clear()
 
 
+"""def get_data(a,b):
+    adj = a
+    vert = b
+    """
 #windows used for filling data
 class choose(QWidget):
+    data = Signal(list, int)
     def __init__(self):
         super().__init__()
         layoutv = QVBoxLayout()
@@ -148,9 +160,11 @@ class choose(QWidget):
         self.resize(400,100)
         self.destroyed.connect(self.closed)
 
+        self.n = 0
+        self.adja = None
 
-    def closed():
-        del self.win[index(w)]
+    def closed(self):
+        del win[index(self)]
 
     def csv_func(self):
             file_path, _ = QFileDialog.getOpenFileName(
@@ -159,30 +173,33 @@ class choose(QWidget):
                 return
             with open(file_path, "r") as file:
                 read = list(csv.reader(file))
-                n =int(read[0][0])
+                self.n  =int(read[0][0])
+                print(self.n)
                 read.pop(0)
-                adja = [[] for i in range(n)]
+                self.adja = [[] for i in range(self.n)]
                 for row in read :
                     if len(row)>=2: 
-                        if int(row[1]) not in  adja[int(row[0])] :
-                            adja[int(row[0])].append(int(row[1])) 
-                        if int(row[0]) not in  adja[int(row[1])] : 
-                            adja[int(row[1])].append(int(row[0]))
+                        if int(row[1]) not in  self.adja[int(row[0])] :
+                            self.adja[int(row[0])].append(int(row[1])) 
+                        if int(row[0]) not in  self.adja[int(row[1])] : 
+                            self.adja[int(row[1])].append(int(row[0]))
+            self.data.emit(self.adja, self.n)
+            QMessageBox.information(window,"Success" , "Data imported Successfully!")
 
-            return adja
 
 #function called when clicked run algorithme                
 def run_algo(gh,rw):
-    adj =[[1,3],[0,2],[1,3],[0,2]]
-      
-    gh.drawing(4,adj)
-    sol = is_chordal_tarjan(adj)
-    if sol == True:
-        final_result = "this graph is chrodal"
+    if vert == 0:
+        QMessageBox.warning(window,"Warning" , "You must select a file first!")
     else :
-        final_result = "this graph is not chrodal"
-    rw.clear()
-    rw.append(final_result)
+        gh.drawing(vert,adj)
+        sol = is_chordal_tarjan(adj)
+        if sol == True:
+            final_result = "this graph is chrodal"
+        else :
+            final_result = "this graph is not chrodal"
+        rw.clear()
+        rw.append(final_result)
 
 #main-code 
 if __name__ == "__main__":
@@ -198,12 +215,12 @@ if __name__ == "__main__":
     left_layout = QVBoxLayout()
     right_layout = QVBoxLayout()
 
-    text = QLabel("CHECK BOX")
+    #text = QLabel("CHECK BOX")
     b1 = QPushButton("Start Algorithme",window)
     b2 = QPushButton("Fill Data",window)
     algo_list = QComboBox()
     algo_list.addItems(["Tarjan","Fulk-gurson"])
-    check = QCheckBox()
+    #check = QCheckBox()
     result = QTextEdit("Results will appear here...")
     result.setReadOnly(True) 
     view = graph()
@@ -211,8 +228,9 @@ if __name__ == "__main__":
     result_layout.addWidget(result)
 
     choose_layout.addWidget(algo_list)
-    choose_layout.addWidget(text)
-    choose_layout.addWidget(check)
+    choose_layout.addStretch()
+    #choose_layout.addWidget(text)
+    #choose_layout.addWidget(check)
 
     butt_layout.addWidget(b2)
     butt_layout.addWidget(b1)
