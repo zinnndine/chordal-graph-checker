@@ -6,3 +6,5 @@ It uses a variant of Tarjan’s algorithm for chordality testing, which efficien
 
 For input:
 you can either use a CSV file or enter the data manually.
+
+**Status:** Work in Progress – Not yet complete
