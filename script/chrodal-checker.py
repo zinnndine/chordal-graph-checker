@@ -13,8 +13,9 @@ final_result = ""
 win = []
 w=0
 
-# adjency list  [[1,2,3],[0,2],[0,1],[0]]
+# adjency list =  [[1,2,3],[0,2],[0,1],[0]]  where in index i there is all nodes adjacent to i
 
+#the main algorithme
 def is_chordal_tarjan(adj):
     n = len(adj)
     W = list(range(n))  
@@ -62,14 +63,14 @@ def is_chordal_tarjan(adj):
 
 
 
-
+#the function called when pressed fill
 def fill():
     w = choose()                
     w.setWindowModality(Qt.ApplicationModal)
     w.show()
     win.append(w)
     
-
+#drawing the graph
 class graph(QGraphicsView):
     def __init__(self):
         super().__init__()
@@ -126,6 +127,8 @@ class graph(QGraphicsView):
     def clean(self):
         self.canvas.clear()
 
+
+#windows used for filling data
 class choose(QWidget):
     def __init__(self):
         super().__init__()
@@ -167,7 +170,8 @@ class choose(QWidget):
                             adja[int(row[1])].append(int(row[0]))
 
             return adja
-                
+
+#function called when clicked run algorithme                
 def run_algo(gh,rw):
     adj =[[1,3],[0,2],[1,3],[0,2]]
       
@@ -179,11 +183,10 @@ def run_algo(gh,rw):
         final_result = "this graph is not chrodal"
     rw.clear()
     rw.append(final_result)
-    
+
+#main-code 
 if __name__ == "__main__":
-
     app = QApplication(sys.argv)
-
 
     window = QMainWindow()
     cen_wid = QWidget()
@@ -194,7 +197,6 @@ if __name__ == "__main__":
     result_layout = QHBoxLayout()
     left_layout = QVBoxLayout()
     right_layout = QVBoxLayout()
-
 
     text = QLabel("CHECK BOX")
     b1 = QPushButton("Start Algorithme",window)
@@ -221,16 +223,13 @@ if __name__ == "__main__":
     left_layout.addLayout(choose_layout)
     left_layout.addLayout(result_layout)
 
-
     main_layout.addLayout(left_layout)
     main_layout.addLayout(right_layout)
-
 
     cen_wid.setLayout(main_layout)
 
     b1.clicked.connect(lambda: run_algo(view,result))
     b2.clicked.connect(fill)
-
 
     window.setCentralWidget(cen_wid)
     window.setWindowTitle("Chrodal Graph")
