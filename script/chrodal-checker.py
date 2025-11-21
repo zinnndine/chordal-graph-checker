@@ -135,10 +135,6 @@ class graph(QGraphicsView):
         self.canvas.clear()
 
 
-"""def get_data(a,b):
-    adj = a
-    vert = b
-    """
 #windows used for filling data
 class choose(QWidget):
     data = Signal(list, int)
@@ -167,24 +163,30 @@ class choose(QWidget):
         del win[index(self)]
 
     def csv_func(self):
-            file_path, _ = QFileDialog.getOpenFileName(
-                self, "Get data file", "", "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)")
-            if not file_path:
-                return
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Get data file", "", "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)")
+        if not file_path:
+            return
+        
+        try:
             with open(file_path, "r") as file:
                 read = list(csv.reader(file))
-                self.n  =int(read[0][0])
-                print(self.n)
-                read.pop(0)
-                self.adja = [[] for i in range(self.n)]
-                for row in read :
-                    if len(row)>=2: 
-                        if int(row[1]) not in  self.adja[int(row[0])] :
-                            self.adja[int(row[0])].append(int(row[1])) 
-                        if int(row[0]) not in  self.adja[int(row[1])] : 
-                            self.adja[int(row[1])].append(int(row[0]))
-            self.data.emit(self.adja, self.n)
-            QMessageBox.information(window,"Success" , "Data imported Successfully!")
+                self.n = int(read[0][0])
+                read.pop(0) 
+                self.adj = [[] for _ in range(self.n)]
+                for row in read:
+                    if len(row) >= 2:
+                        u = int(row[0])
+                        v = int(row[1])
+                        if v not in self.adj[u]:
+                            self.adj[u].append(v)
+                        if u not in self.adj[v]:
+                            self.adj[v].append(u)
+                self.data.emit(self.adj, self.n)
+                QMessageBox.information(window, "Success", "Data imported Successfully!")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to read file: {str(e)}")
 
 
 #function called when clicked run algorithme                
