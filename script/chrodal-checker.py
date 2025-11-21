@@ -15,8 +15,6 @@ vert = 0 #vertices number
 adj = []
 w=0
 
-# adjency list =  [[1,2,3],[0,2],[0,1],[0]]  where in index i there is all nodes adjacent to i
-
 #the main algorithme
 def is_chordal_tarjan(adj):
     n = len(adj)
@@ -151,6 +149,8 @@ class choose(QWidget):
         layouth.addWidget(b3)
         layouth.addWidget(b4)
         b3.clicked.connect(self.csv_func)
+        b4.clicked.connect(self.inp)
+
         self.setLayout(layoutv)
         self.setWindowTitle("fill")
         self.resize(400,100)
@@ -183,10 +183,14 @@ class choose(QWidget):
                         if u not in self.adj[v]:
                             self.adj[v].append(u)
                 self.data.emit(self.adj, self.n)
-                QMessageBox.information(window, "Success", "Data imported Successfully!")
+                QMessageBox.information(self, "Success", "Data imported Successfully!")
                 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to read file: {str(e)}")
+    
+    def inp(self):
+        QMessageBox.warning(self, "warning", "this feature is still in develepment!")
+
 
 
 #function called when clicked run algorithme                
@@ -203,7 +207,14 @@ def run_algo(gh,rw):
         rw.clear()
         rw.append(final_result)
 
-#main-code 
+
+def fix():
+    if algo_list.currentIndex() == 1 :   
+        QMessageBox.warning(window,"warning" ,"this methode is still in Dev")
+        algo_list.setCurrentIndex(0)
+
+
+#maincode
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
@@ -256,6 +267,8 @@ if __name__ == "__main__":
     window.resize(800,600)
 
     window.show()
+    algo_list.currentTextChanged.connect(fix)
+
     app.exec()
 
 
