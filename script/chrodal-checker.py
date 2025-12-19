@@ -1,15 +1,16 @@
 from PySide6.QtWidgets import ( QLabel ,QHBoxLayout ,
- QVBoxLayout , QCheckBox , QApplication , QMainWindow  ,
-  QPushButton , QWidget , QListWidget , QFileDialog , QListView , QComboBox , QTextEdit 
-  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem, QGraphicsLineItem ,QMessageBox , QStackedWidget)
+ QVBoxLayout  , QApplication , QMainWindow  ,
+  QPushButton , QWidget  , QFileDialog  , QComboBox , QTextEdit 
+  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem, QGraphicsLineItem ,QMessageBox )
 from PySide6.QtGui import QPen, QBrush
 from PySide6.QtCore import Qt , Signal
 import sys
 import random
 import csv
 import networkx
-import matplotlib.pyplot
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
+ 
 final_result = "" #output
 win = [] #windows opened
 vert = 0 #vertices number
@@ -83,6 +84,8 @@ class graph(QGraphicsView):
         self.canvas = QGraphicsScene()
         self.setScene(self.canvas)
     def drawing(self,n,adj):
+        self.canvas = QGraphicsScene()
+        self.setScene(self.canvas)
         self.clean()
         nodes = [i for i in range(0,n)]
         arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i]]
@@ -130,6 +133,8 @@ class graph(QGraphicsView):
             b=b+1
 
     def drawing_math(self,n,adj):
+        self.canvas = QGraphicsScene()
+        self.setScene(self.canvas)
         self.clean()
         nodes = [i for i in range(0,n)]
         arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i]]
@@ -150,7 +155,6 @@ class graph(QGraphicsView):
             node = QGraphicsEllipseItem(x*s-f,y*s-f,f*2,f*2)
             node.setBrush(QBrush(Qt.blue))
             self.canvas.addItem(node)
-
 
     def clean(self):
         self.canvas.clear()
