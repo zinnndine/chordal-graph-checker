@@ -7,7 +7,8 @@ from PySide6.QtCore import Qt , Signal
 import sys
 import random
 import csv
-
+import networkx
+import matplotlib.pyplot
 
 final_result = "" #output
 win = [] #windows opened
@@ -128,6 +129,15 @@ class graph(QGraphicsView):
 
             b=b+1
 
+    def drawing_math(self,n,adj):
+        self.clean()
+        nodes = [i for i in range(0,n)]
+        arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i]]
+        G = networkx.Graph()
+        G.add_edges_from(arcs)
+        G.add_nodes_from(nodes)
+        networkx.draw(G,None,None,0,None,False)
+        self.canvas.addItem(lines[b])
 
     def clean(self):
         self.canvas.clear()
