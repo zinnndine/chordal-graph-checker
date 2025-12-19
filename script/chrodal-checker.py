@@ -136,8 +136,21 @@ class graph(QGraphicsView):
         G = networkx.Graph()
         G.add_edges_from(arcs)
         G.add_nodes_from(nodes)
-        networkx.draw(G,None,None,0,None,False)
-        self.canvas.addItem(lines[b])
+        s = 300
+        f = 15
+        positions = networkx.spring_layout(G,seed=4)
+        for u , v in G.edges():
+            x ,y = positions[u]
+            z ,k = positions[v]
+            edge = QGraphicsLineItem(x*s,y*s,z*s,k*s)
+            edge.setPen(QPen(Qt.black))
+            self.canvas.addItem(edge)
+        for v in G.nodes():
+            x,y = positions[v]
+            node = QGraphicsEllipseItem(x*s-f,y*s-f,f*2,f*2)
+            node.setBrush(QBrush(Qt.blue))
+            self.canvas.addItem(node)
+
 
     def clean(self):
         self.canvas.clear()
@@ -204,11 +217,14 @@ class choose(QWidget):
 
 
 #function called when clicked run algorithme                
-def run_algo(gh,rw):
+def run_algo(gh,rw,vis :QComboBox):
     if vert == 0:
         QMessageBox.warning(window,"Warning" , "You must select a file first!")
     else :
-        gh.drawing(vert,adj)
+        if vis.currentText() == "only Qt" :
+            gh.drawing(vert,adj)
+        elif vis.currentText() == "using networkx":
+            gh.drawing_math(vert,adj)
         sol = is_chordal_tarjan(adj)
         if sol == True:
             final_result = "this graph is chrodal"
@@ -243,6 +259,10 @@ if __name__ == "__main__":
     b2 = QPushButton("Fill Data",window)
     algo_list = QComboBox()
     algo_list.addItems(["Tarjan","Fulk-gurson"])
+        
+    visulazation = QComboBox()
+    visulazation.addItems(["only Qt","using networkx"])
+
     #check = QCheckBox()
     result = QTextEdit("Results will appear here...")
     result.setReadOnly(True) 
@@ -251,6 +271,8 @@ if __name__ == "__main__":
     result_layout.addWidget(result)
 
     choose_layout.addWidget(algo_list)
+    choose_layout.addWidget(visulazation)
+
     choose_layout.addStretch()
     #choose_layout.addWidget(text)
     #choose_layout.addWidget(check)
@@ -269,7 +291,7 @@ if __name__ == "__main__":
 
     cen_wid.setLayout(main_layout)
 
-    b1.clicked.connect(lambda: run_algo(view,result))
+    b1.clicked.connect(lambda: run_algo(view,result,visulazation))
     b2.clicked.connect(fill)
 
     window.setCentralWidget(cen_wid)
