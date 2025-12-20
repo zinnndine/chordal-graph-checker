@@ -18,6 +18,11 @@ adj = []
 txt = ""
 w=0
 
+def remove_window(w):
+    global win
+    if w in win:
+        win.remove(w)
+
 #the main algorithme
 def is_chordal_tarjan(adj):
     n = len(adj)
@@ -76,6 +81,7 @@ def fill():
     w.setWindowModality(Qt.ApplicationModal)
     w.show()
     win.append(w)
+    w.destroyed.connect(lambda :remove_window(w))
     w.data.connect(handle_data)   
 
 #drawing the graph
@@ -184,6 +190,38 @@ class pilot(QWidget):
         networkx.draw(G, pos, ax=self.ax, with_labels=False, node_color='skyblue', edge_color='gray', node_size=500)
         self.canvas.draw()
 
+class input_window(QWidget):
+    er = Signal(list, int)
+    def __init__(self):
+        super().__init__()
+        llm = QHBoxLayout()
+        self.text = QTextEdit()
+        self.text.setPlaceholderText("ex:[[0,1,1],[1,0,1],[1,1,0]]")
+        xt = QLabel("write down adj matrix:")
+        cmm = QVBoxLayout()
+        cmm.addWidget(xt)
+        cmm.addLayout(llm)
+        botton = QPushButton("save")
+        self.setLayout(cmm)
+        llm.addWidget(self.text)
+        llm.addWidget(botton)
+        self.adja = []
+        self.n = 0
+        botton.clicked.connect(lambda: self.add_botton())
+    def add_botton(self):
+        g = self.text.toPlainText()
+        rows = g.split("],[")
+        for row in rows:
+            row = row.replace("[","").replace("]","").replace(" ","")
+            self.adja.append([int(x) for x in row.split(",")])
+        self.n= len(self.adja[0])
+        self.er.emit(self.adja, self.n)
+
+        QMessageBox.information(self, "information", "Data is Saved!")
+
+
+
+
 #windows used for filling data
 class choose(QWidget):
     data = Signal(list, int)
@@ -218,7 +256,6 @@ class choose(QWidget):
             self, "Get data file", "", "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)")
         if not file_path:
             return
-        
         try:
             with open(file_path, "r") as file:
                 read = list(csv.reader(file))
@@ -233,6 +270,7 @@ class choose(QWidget):
                             self.adj[u].append(v)
                         if u not in self.adj[v]:
                             self.adj[v].append(u)
+                print(self.n)
                 self.data.emit(self.adj, self.n)
                 r= QMessageBox.information(self, "Success", "Data imported Successfully!")
                 if r == QMessageBox.StandardButton.Ok:
@@ -243,12 +281,19 @@ class choose(QWidget):
             QMessageBox.critical(self, "Error", f"Failed to read file: {str(e)}")
     
     def inp(self):
-        QMessageBox.warning(self, "warning", "this feature is still in develepment!")
+        s= input_window()
+        win.append(s)
+        s.setWindowModality(Qt.ApplicationModal)
+        s.er.connect(handle_data)
+        s.show()
+        s.destroyed.connect(lambda :remove_window(s))
+
+        """QMessageBox.warning(self, "warning", "this feature is still in develepment!")"""
 
 #function called when clicked run algorithme                
 def run_algo(combo_vis,math,gh,rw,vis,):
     if vert == 0:
-        QMessageBox.warning(window,"Warning" , "You must select a file first!")
+        QMessageBox.warning(window,"Warning" , "You must import Data first!")
     else :
         if vis == "only Qt" :
             gh.drawing(vert,adj)
