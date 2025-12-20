@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import ( QLabel ,QHBoxLayout ,
  QVBoxLayout  , QApplication , QMainWindow  ,
   QPushButton , QWidget  , QFileDialog  , QComboBox , QTextEdit 
-  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem, QGraphicsLineItem ,QMessageBox )
+  , QGraphicsScene, QGraphicsView, QGraphicsEllipseItem,QStackedWidget ,QGraphicsLineItem ,QMessageBox )
 from PySide6.QtGui import QPen, QBrush
 from PySide6.QtCore import Qt , Signal
 import sys
@@ -9,12 +9,13 @@ import random
 import csv
 import networkx
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-
+import matplotlib.pyplot as plt
  
 final_result = "" #output
 win = [] #windows opened
 vert = 0 #vertices number
 adj = []
+txt = ""
 w=0
 
 #the main algorithme
@@ -131,7 +132,7 @@ class graph(QGraphicsView):
             
 
             b=b+1
-
+        print(2)
     def drawing_math(self,n,adj):
         self.canvas = QGraphicsScene()
         self.setScene(self.canvas)
@@ -142,13 +143,13 @@ class graph(QGraphicsView):
         G.add_edges_from(arcs)
         G.add_nodes_from(nodes)
         s = 300
-        f = 15
+        f = 10
         positions = networkx.spring_layout(G,seed=4)
         for u , v in G.edges():
             x ,y = positions[u]
             z ,k = positions[v]
             edge = QGraphicsLineItem(x*s,y*s,z*s,k*s)
-            edge.setPen(QPen(Qt.black))
+            edge.setPen(QPen(Qt.black,4))
             self.canvas.addItem(edge)
         for v in G.nodes():
             x,y = positions[v]
@@ -156,9 +157,32 @@ class graph(QGraphicsView):
             node.setBrush(QBrush(Qt.blue))
             self.canvas.addItem(node)
 
+
+
+
     def clean(self):
         self.canvas.clear()
 
+
+class pilot(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvas(self.figure)
+        llm=QVBoxLayout()
+        self.setLayout(llm)
+        llm.addWidget(self.canvas)
+
+    def drawing_lib(self,n,adj):
+        self.ax.clear()
+        nodes = [i for i in range(0,n)]
+        arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i]]
+        G = networkx.Graph()
+        G.add_edges_from(arcs)
+        G.add_nodes_from(nodes)
+        pos = networkx.spring_layout(G,seed=4)  
+        networkx.draw(G, pos, ax=self.ax, with_labels=False, node_color='skyblue', edge_color='gray', node_size=500)
+        self.canvas.draw()
 
 #windows used for filling data
 class choose(QWidget):
@@ -180,14 +204,14 @@ class choose(QWidget):
 
         self.setLayout(layoutv)
         self.setWindowTitle("fill")
-        self.resize(400,100)
-        self.destroyed.connect(self.closed)
+        self.setFixedSize(400,100)
 
         self.n = 0
         self.adja = None
 
     def closed(self):
-        del win[index(self)]
+        pass
+        """del win[self]"""
 
     def csv_func(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -210,25 +234,33 @@ class choose(QWidget):
                         if u not in self.adj[v]:
                             self.adj[v].append(u)
                 self.data.emit(self.adj, self.n)
-                QMessageBox.information(self, "Success", "Data imported Successfully!")
-                
+                r= QMessageBox.information(self, "Success", "Data imported Successfully!")
+                if r == QMessageBox.StandardButton.Ok:
+                    self.close()
+                    
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to read file: {str(e)}")
     
     def inp(self):
         QMessageBox.warning(self, "warning", "this feature is still in develepment!")
 
-
-
 #function called when clicked run algorithme                
-def run_algo(gh,rw,vis :QComboBox):
+def run_algo(combo_vis,math,gh,rw,vis,):
     if vert == 0:
         QMessageBox.warning(window,"Warning" , "You must select a file first!")
     else :
-        if vis.currentText() == "only Qt" :
+        if vis == "only Qt" :
             gh.drawing(vert,adj)
-        elif vis.currentText() == "using networkx":
+            combo_vis.setCurrentIndex(0)
+        elif vis == "using networkx":
             gh.drawing_math(vert,adj)
+            combo_vis.setCurrentIndex(0)
+        elif vis== "matpilot":
+            combo_vis.setCurrentIndex(1)
+            math.drawing_lib(vert,adj)
+
+
         sol = is_chordal_tarjan(adj)
         if sol == True:
             final_result = "this graph is chrodal"
@@ -243,6 +275,9 @@ def fix():
         QMessageBox.warning(window,"warning" ,"this methode is still in Dev")
         algo_list.setCurrentIndex(0)
 
+def chang():
+    global txt
+    txt = visulazation.currentText()
 
 #maincode
 if __name__ == "__main__":
@@ -265,13 +300,17 @@ if __name__ == "__main__":
     algo_list.addItems(["Tarjan","Fulk-gurson"])
         
     visulazation = QComboBox()
-    visulazation.addItems(["only Qt","using networkx"])
+    visulazation.addItems(["matpilot","only Qt","using networkx"])
 
     #check = QCheckBox()
     result = QTextEdit("Results will appear here...")
     result.setReadOnly(True) 
+    view_new = QStackedWidget()
     view = graph()
-
+    view_new.addWidget(view)
+    math = pilot()
+    view_new.addWidget(math)
+    view_new.setFixedWidth(550)
     result_layout.addWidget(result)
 
     choose_layout.addWidget(algo_list)
@@ -284,7 +323,7 @@ if __name__ == "__main__":
     butt_layout.addWidget(b2)
     butt_layout.addWidget(b1)
 
-    right_layout.addWidget(view)
+    right_layout.addWidget(view_new)
 
     left_layout.addLayout(butt_layout)
     left_layout.addLayout(choose_layout)
@@ -294,8 +333,10 @@ if __name__ == "__main__":
     main_layout.addLayout(right_layout)
 
     cen_wid.setLayout(main_layout)
+    txt = visulazation.currentText()
+    b1.clicked.connect(lambda: run_algo(view_new,math,view,result,txt))
+    visulazation.currentTextChanged.connect(chang)
 
-    b1.clicked.connect(lambda: run_algo(view,result,visulazation))
     b2.clicked.connect(fill)
 
     window.setCentralWidget(cen_wid)
