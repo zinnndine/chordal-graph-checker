@@ -163,9 +163,6 @@ class graph(QGraphicsView):
             node.setBrush(QBrush(Qt.blue))
             self.canvas.addItem(node)
 
-
-
-
     def clean(self):
         self.canvas.clear()
 
@@ -182,7 +179,7 @@ class pilot(QWidget):
     def drawing_lib(self,n,adj):
         self.ax.clear()
         nodes = [i for i in range(0,n)]
-        arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i]]
+        arcs = [(i, k) for i in range(n) for k in range(n) if k in adj[i] and i!=k]
         G = networkx.Graph()
         G.add_edges_from(arcs)
         G.add_nodes_from(nodes)
@@ -192,6 +189,7 @@ class pilot(QWidget):
 
 class input_window(QWidget):
     er = Signal(list, int)
+    clo = Signal(int)
     def __init__(self):
         super().__init__()
         llm = QHBoxLayout()
@@ -217,8 +215,10 @@ class input_window(QWidget):
         self.n= len(self.adja[0])
         self.er.emit(self.adja, self.n)
 
-        QMessageBox.information(self, "information", "Data is Saved!")
-
+        r =QMessageBox.information(self, "information", "Data is Saved!")
+        if r == QMessageBox.StandardButton.Ok:
+                self.close()
+                self.clo.emit(0)
 
 
 
@@ -247,9 +247,7 @@ class choose(QWidget):
         self.n = 0
         self.adja = None
 
-    def closed(self):
-        pass
-        """del win[self]"""
+
 
     def csv_func(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -280,6 +278,9 @@ class choose(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to read file: {str(e)}")
     
+    def vvv(self):
+        self.close()
+
     def inp(self):
         s= input_window()
         win.append(s)
@@ -287,7 +288,7 @@ class choose(QWidget):
         s.er.connect(handle_data)
         s.show()
         s.destroyed.connect(lambda :remove_window(s))
-
+        s.clo.connect(lambda: self.vvv())
         """QMessageBox.warning(self, "warning", "this feature is still in develepment!")"""
 
 #function called when clicked run algorithme                
