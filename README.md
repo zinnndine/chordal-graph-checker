@@ -1,10 +1,36 @@
-# chordal-graph-checker
-Application that determines whether the entered graph is chordal or not.
 
-About the Algorithm
-It uses a variant of Tarjan’s algorithm for chordality testing, which efficiently checks for the presence of chordless cycles.
+---
 
-For input:
-you can either use a CSV file or enter the data manually.
+# Chordal Graph Checker (Python + PySide6)
 
-**Status:** Work in Progress – Not yet complete
+# Chordal Graph Checker with GUI
+
+A Python application with a PySide6 graphical interface that checks whether a given graph is **chordal** using classical graph algorithms.
+
+---
+
+## Problem Statement
+
+Chordal graphs are an important class of graphs in graph theory and optimization, characterized by the absence of induced cycles of length greater than three.  
+They play a key role in **perfect graphs**.
+
+This project determines whether an input graph is chordal and provides a simple visualization interface.
+
+---
+
+## Algorithm Used
+
+- **Maximum Cardinality Search (MCS)**
+
+---
+
+## Implementation Details
+
+- Language: **Python**
+- GUI: **PySide6**
+---
+
+## How to Run
+
+```bash
+python chordal_checker.py
