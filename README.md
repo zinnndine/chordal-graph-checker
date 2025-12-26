@@ -30,7 +30,7 @@ This project determines whether an input graph is chordal and provides a simple 
 - GUI: **PySide6**
 ---
 
-## How to Run
+## How to Run (linux)
 
 ```bash
-python chordal_checker.py
+python3 chordal_checker.py
