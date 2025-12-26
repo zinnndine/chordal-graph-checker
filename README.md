@@ -1,7 +1,7 @@
 
 ---
 
-# Chordal Graph Checker (Python + PySide6)
+# Chordal Graph Checker
 
 # Chordal Graph Checker with GUI
 
